@@ -4,39 +4,45 @@ import { removeItem, updateQuantity } from './CartSlice';
 import './CartItem.css';
 
 const CartItem = ({ onContinueShopping }) => {
-  const cart = useSelector(state => state.cart.items);
+  const cart = useSelector(state => state.cart);
   const dispatch = useDispatch();
 
   // Calculate total amount for all products in the cart
   const calculateTotalAmount = () => {
- 
+    return cart.items.map((item, _) => costToFloat(item.cost) * item.quantity).reduce((a, b) => a + b, 0);
   };
 
   const handleContinueShopping = (e) => {
-   
+    onContinueShopping();  
   };
 
-
+  const costToFloat = (cost) => {
+    return parseFloat(cost.slice(1));
+  }
 
   const handleIncrement = (item) => {
+    dispatch(updateQuantity({plant: item, quantity: item.quantity + 1}));
   };
 
   const handleDecrement = (item) => {
-   
+    if (item.quantity !== 0)
+      dispatch(updateQuantity({plant: item, quantity: item.quantity - 1}));
   };
 
   const handleRemove = (item) => {
+    dispatch(removeItem(item));
   };
 
   // Calculate total cost based on quantity for an item
   const calculateTotalCost = (item) => {
+    return costToFloat(item.cost) * item.quantity;
   };
 
   return (
     <div className="cart-container">
       <h2 style={{ color: 'black' }}>Total Cart Amount: ${calculateTotalAmount()}</h2>
       <div>
-        {cart.map(item => (
+        {cart.items.map(item => (
           <div className="cart-item" key={item.name}>
             <img className="cart-item-image" src={item.image} alt={item.name} />
             <div className="cart-item-details">
@@ -57,12 +63,10 @@ const CartItem = ({ onContinueShopping }) => {
       <div className="continue_shopping_btn">
         <button className="get-started-button" onClick={(e) => handleContinueShopping(e)}>Continue Shopping</button>
         <br />
-        <button className="get-started-button1">Checkout</button>
+        <button onClick={() => cart.items.forEach((item) => dispatch(removeItem(item)))} className="get-started-button1">Checkout</button>
       </div>
     </div>
   );
 };
 
 export default CartItem;
-
-
